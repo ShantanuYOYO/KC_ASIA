@@ -627,7 +627,7 @@ if uploaded_file is not None:
         with st.spinner('Loading and processing data…'):
             merged_df, sheet_a_unique, sheet_b_raw = load_and_process_data(uploaded_file)
 
-        return_pct = 19.22
+        return_pct = 18.93
 
         st.success(f"✅ Data loaded successfully! {len(merged_df):,} records processed")
         st.markdown("<hr>", unsafe_allow_html=True)
@@ -740,7 +740,7 @@ if uploaded_file is not None:
                 (col2, "💰", "Total Qty Sold", f"{f_sold:,.0f}"),
                 (col3, "⚖️", "Balance Qty",   f"{f_bal:,.0f}"),
                 (col4, "🛠️", "Damaged Qty",   f"{f_damaged:,.0f}"),
-                (col5, "🔄", "Return %",       f"{return_pct:.1f}%"),
+                (col5, "🔄", "Return % Jan-Apr 2026",       f"{return_pct:.1f}%"),
                 (col6, "📈", "Sales %",        f"{f_spct:.1f}%"),
             ]
             for col, icon, label, value in kpis:
@@ -883,7 +883,7 @@ if uploaded_file is not None:
                     text=website_data['QTY'].apply(lambda v: f"{v:,.0f}"),
                     marker=dict(color=bar_colors, line=dict(color='rgba(255,255,255,0.06)', width=1), cornerradius=6),
                 ))
-                fig_ws.update_layout(title="Sales by Marketplace")
+                fig_ws.update_layout(title="Sales by Marketplace till Apr 2026")
                 fig_ws = _dark_layout(fig_ws, "Marketplace", "Quantity Sold",
                                       extra_xaxis={'categoryorder': 'array',
                                                    'categoryarray': website_data['WEBSITE'].tolist()})
