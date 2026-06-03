@@ -892,46 +892,7 @@ if uploaded_file is not None:
                 st.info("No marketplace data available")
             st.markdown("</div>", unsafe_allow_html=True)
 
-            # CHART 2 — Brand
-            st.markdown('<div class="chart-wrap"><div class="chart-label">🏷️  Initial Qty · Balance · Damaged Qty by Brand</div>', unsafe_allow_html=True)
-            brand_comp = (
-                filtered_sheet_a.groupby('BRAND', observed=True)
-                .agg(INITIAL_QTY=('INITIAL_QTY', 'sum'), BALANCE=('BALANCE', 'sum'), DAMAGED_QTY=('DAMAGED_QTY', 'sum'))
-                .reset_index().sort_values('INITIAL_QTY', ascending=False)
-            )
-            grouped_bar_chart(brand_comp, 'BRAND', "Initial Qty vs Balance vs Damaged by Brand", "Brand")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # CHART 3 — Season
-            st.markdown('<div class="chart-wrap"><div class="chart-label">🗓️  Initial Qty · Balance · Damaged Qty by Season</div>', unsafe_allow_html=True)
-            season_comp = (
-                filtered_sheet_a.groupby('SEASON', observed=True)
-                .agg(INITIAL_QTY=('INITIAL_QTY', 'sum'), BALANCE=('BALANCE', 'sum'), DAMAGED_QTY=('DAMAGED_QTY', 'sum'))
-                .reset_index().sort_values('INITIAL_QTY', ascending=False)
-            )
-            grouped_bar_chart(season_comp, 'SEASON', "Initial Qty vs Balance vs Damaged by Season", "Season")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # CHART 4 — Category
-            st.markdown('<div class="chart-wrap"><div class="chart-label">🗂️  Initial Qty · Balance · Damaged Qty by Category</div>', unsafe_allow_html=True)
-            category_comp = (
-                filtered_sheet_a.groupby('CATEGORY', observed=True)
-                .agg(INITIAL_QTY=('INITIAL_QTY', 'sum'), BALANCE=('BALANCE', 'sum'), DAMAGED_QTY=('DAMAGED_QTY', 'sum'))
-                .reset_index().sort_values('INITIAL_QTY', ascending=False)
-            )
-            grouped_bar_chart(category_comp, 'CATEGORY', "Initial Qty vs Balance vs Damaged by Category", "Category")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # CHART 5 — Subcategory
-            st.markdown('<div class="chart-wrap"><div class="chart-label">📂  Initial Qty · Balance · Damaged Qty by Subcategory</div>', unsafe_allow_html=True)
-            subcat_comp = (
-                filtered_sheet_a.groupby('SUBCATEGORY', observed=True)
-                .agg(INITIAL_QTY=('INITIAL_QTY', 'sum'), BALANCE=('BALANCE', 'sum'), DAMAGED_QTY=('DAMAGED_QTY', 'sum'))
-                .reset_index().sort_values('INITIAL_QTY', ascending=False)
-            )
-            grouped_bar_chart(subcat_comp, 'SUBCATEGORY', "Initial Qty vs Balance vs Damaged by Subcategory", "Subcategory")
-            st.markdown("</div>", unsafe_allow_html=True)
-
+          
             # CHART 6 — Month-Year
             st.markdown('<div class="chart-wrap"><div class="chart-label">📅  Month-Year Wise Qty Distribution</div>', unsafe_allow_html=True)
             monthly_b = filtered_b[filtered_b['ORDER_DATE'].notna()].copy()
