@@ -470,7 +470,7 @@ def render_gold_table(df, title, height=420):
 st.markdown("""
 <div class="report-title">
     🌏  Asia Sales Report
-    <div class="report-subtitle">Comprehensive Sales Analytics Dashboard · 2025</div>
+    <div class="report-subtitle">Comprehensive Sales Analytics Dashboard ·Apr 2026</div>
 </div>
 <hr>
 """, unsafe_allow_html=True)
@@ -922,7 +922,7 @@ if uploaded_file is not None:
                     text=monthly_agg['QTY'].apply(lambda v: f"{v:,.0f}"),
                     marker=dict(color=bar_colors, line=dict(color='rgba(255,255,255,0.06)', width=1), cornerradius=5),
                 ))
-                fig_mo.update_layout(title="Sales by Month-Year")
+                fig_mo.update_layout(title="Sales by Month-Year till Apr 2026")
                 fig_mo = _dark_layout(
                     fig_mo, "Month-Year", "Quantity Sold",
                     extra_xaxis={'categoryorder': 'array', 'categoryarray': ordered_labels},
@@ -956,7 +956,7 @@ else:
 **Sheet B Columns (Required):**
 `WEBSITE` · `COLAB` · `QTY` · `ORDER RECV DATE`
 
-> **Note:** `ORDER RECV DATE` supports the `August-2025` format (full or abbreviated month name + hyphen + 2 or 4-digit year).
+> **Note:** `ORDER RECV DATE` supports the `Apr-2026` format (full or abbreviated month name + hyphen + 2 or 4-digit year).
 
 **Sidebar Filters — Sheet A:** Brand · Season · Category · Subcategory · Color · Colab  
 **Sidebar Filters — Sheet B:** Website · Month-Year
