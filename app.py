@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Global CSS (gold/dark theme, same as India report) ───────────────────────
+# ── Global CSS (gold/dark theme, unchanged) ───────────────────────
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
@@ -215,9 +215,7 @@ st.markdown("""
         padding: 10px 12px;
         text-align: left !important;
         white-space: nowrap;
-        /* ── No borders on header ── */
         border: none !important;
-        /* ── Sticky header for scrolling ── */
         position: sticky;
         top: 0;
         z-index: 2;
@@ -236,7 +234,6 @@ st.markdown("""
     }
     .table-scroll td:last-child { border-right: none; }
 
-    /* Numeric columns (2nd onwards) — gold + centered */
     .table-scroll td:not(:first-child) {
         text-align: center;
         font-weight: 900;
@@ -250,7 +247,7 @@ st.markdown("""
         color: #F1C40F !important;
     }
 
-    /* ── Sidebar (no vertical line) ── */
+    /* ── Sidebar ── */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0C0C0C 0%, #0A0A0A 100%) !important;
         border-right: none !important;
@@ -335,7 +332,6 @@ st.markdown("""
     .stat-pill span:first-child { color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
     .stat-pill span:last-child  { font-weight: 700; color: var(--gold-light); }
 
-    /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #0A0A0A; }
     ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.25); border-radius: 2px; }
@@ -350,7 +346,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Keyboard shortcut: R = open sidebar, O = close sidebar ──────────────────
+# ── Keyboard shortcut: R = open sidebar, O = close sidebar ──────────────
 components.html("""
 <script>
 (function() {
@@ -375,7 +371,7 @@ components.html("""
 </script>
 """, height=0)
 
-# ── Palette & chart helpers ───────────────────────────────────────────────────
+# ── Palette & chart helpers ─────────────────────────────────────────────────
 GOLD_PALETTE = [
     "#D4AF37", "#F1C40F", "#E67E22", "#E6B800", "#C0932F",
     "#F4A261", "#E9C46A", "#2A9D8F", "#3EAFBD", "#52C4C0",
@@ -448,9 +444,8 @@ def _dark_layout(fig, xaxis_title, yaxis_title, extra_xaxis=None, height=500, sh
     return fig
 
 
-# ── Gold-theme HTML table renderer (same as India report) ────────────────────
+# ── Gold-theme HTML table renderer ──────────────────────────────────────────
 def render_gold_table(df, title, height=420):
-    """Render a DataFrame as a gold-themed HTML table — first column white, rest gold."""
     headers = "".join(f"<th>{col}</th>" for col in df.columns)
     rows_html = ""
     for _, row in df.iterrows():
@@ -466,7 +461,7 @@ def render_gold_table(df, title, height=420):
     st.markdown(html, unsafe_allow_html=True)
 
 
-# ── Page header ───────────────────────────────────────────────────────────────
+# ── Page header ─────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="report-title">
     🌏  Asia Sales Report
@@ -481,7 +476,7 @@ uploaded_file = st.file_uploader(
 )
 
 
-# ── Custom date parser for "August-2025" style dates ─────────────────────────
+# ── Custom date parser for "August-2025" style dates ───────────────────────
 def parse_asia_date(val):
     val = str(val).strip()
     if val in ('', 'nan', 'NaT', 'None', 'NaN'):
@@ -506,7 +501,7 @@ def parse_asia_date(val):
         return pd.NaT
 
 
-# ── Data loader ───────────────────────────────────────────────────────────────
+# ── Data loader (modified: no merged_df, only stock and order raw) ─────────
 @st.cache_data(ttl=3600)
 def load_and_process_data(uploaded_file):
     try:
@@ -594,25 +589,8 @@ def load_and_process_data(uploaded_file):
         sheet_b_raw['YEAR_NUM']   = sheet_b_raw['ORDER_DATE'].dt.year
         sheet_b_raw['MONTH_YEAR'] = sheet_b_raw['ORDER_DATE'].dt.strftime('%b-%y')
 
-        sheet_b_agg = sheet_b_raw.groupby('COLAB').agg(
-            WEBSITE=('WEBSITE', 'first'),
-            QTY=('QTY', 'sum'),
-            ORDER_DATE=('ORDER_DATE', 'first')
-        ).reset_index()
-
-        merged_df = pd.merge(sheet_a_unique, sheet_b_agg, on='COLAB', how='right', suffixes=('_a', '_b'))
-        for col in ['INITIAL_QTY', 'TOTAL_QTY', 'BALANCE', 'DAMAGED_QTY', 'QTY']:
-            merged_df[col] = merged_df[col].fillna(0)
-
-        merged_df['SALES_PERCENTAGE'] = np.where(
-            merged_df['INITIAL_QTY'] > 0,
-            (merged_df['TOTAL_QTY'] / merged_df['INITIAL_QTY']) * 100, 0
-        )
-        merged_df['RETURN_PERCENTAGE'] = 0.0
-        merged_df['MONTH_YEAR'] = merged_df['ORDER_DATE'].dt.strftime('%b-%y')
-        merged_df['YEAR_MONTH'] = merged_df['ORDER_DATE'].dt.to_period('M')
-
-        return merged_df, sheet_a_unique, sheet_b_raw
+        # No merged_df needed – return clean stock and raw orders
+        return sheet_a_unique, sheet_b_raw
 
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
@@ -621,18 +599,18 @@ def load_and_process_data(uploaded_file):
         st.stop()
 
 
-# ── Main dashboard ─────────────────────────────────────────────────────────────
+# ── Main dashboard ───────────────────────────────────────────────────────────
 if uploaded_file is not None:
     try:
         with st.spinner('Loading and processing data…'):
-            merged_df, sheet_a_unique, sheet_b_raw = load_and_process_data(uploaded_file)
+            sheet_a_unique, sheet_b_raw = load_and_process_data(uploaded_file)
 
         return_pct = 18.93
 
-        st.success(f"✅ Data loaded successfully! {len(merged_df):,} records processed")
+        st.success(f"✅ Data loaded successfully! {len(sheet_a_unique):,} stock records processed")
         st.markdown("<hr>", unsafe_allow_html=True)
 
-        # ── Sidebar ────────────────────────────────────────────────────────────
+        # ── Sidebar ──────────────────────────────────────────────────────────
         with st.sidebar:
             st.markdown("### SORT TABLES")
             sort_column = st.selectbox(
@@ -674,7 +652,7 @@ if uploaded_file is not None:
             selected_websites    = st.multiselect("Website",    ['All'] + websites,    default='All')
             selected_month_years = st.multiselect("Month-Year", ['All'] + month_years, default='All')
 
-            # Apply Sheet A filters
+            # Apply Sheet A filters → valid COLAB set
             filtered_colabs = sheet_a_unique.copy()
             if 'All' not in selected_brands        and selected_brands:
                 filtered_colabs = filtered_colabs[filtered_colabs['BRAND'].isin(selected_brands)]
@@ -691,23 +669,20 @@ if uploaded_file is not None:
 
             valid_colabs = set(filtered_colabs['COLAB'].unique())
 
-            # Apply Sheet B filters
+            # Apply Sheet B filters (only restrict order data, not the COLAB set)
             filtered_b = sheet_b_raw[sheet_b_raw['COLAB'].isin(valid_colabs)].copy()
             if 'All' not in selected_websites    and selected_websites:
                 filtered_b = filtered_b[filtered_b['WEBSITE'].isin(selected_websites)]
             if 'All' not in selected_month_years and selected_month_years:
                 filtered_b = filtered_b[filtered_b['MONTH_YEAR'].isin(selected_month_years)]
 
-            filtered_df = merged_df[merged_df['COLAB'].isin(valid_colabs)].copy()
-            if 'All' not in selected_websites and selected_websites:
-                filtered_df = filtered_df[filtered_df['WEBSITE'].isin(selected_websites)]
-
+            # DATASET stats (rule #6)
             st.markdown("---")
             st.markdown("### DATASET")
             st.markdown(f"""
 <div class="stat-pill"><span>COLABs</span><span>{len(valid_colabs):,}</span></div>
-<div class="stat-pill"><span>Brands</span><span>{filtered_colabs['BRAND'].nunique()}</span></div>
-<div class="stat-pill"><span>Categories</span><span>{filtered_colabs['CATEGORY'].nunique()}</span></div>
+<div class="stat-pill"><span>Seasons</span><span>{filtered_colabs['SEASON'].nunique()}</span></div>
+<div class="stat-pill"><span>Subcategories</span><span>{filtered_colabs['SUBCATEGORY'].nunique()}</span></div>
 <div class="stat-pill"><span>Websites</span><span>{filtered_b['WEBSITE'].nunique()}</span></div>
 <div class="stat-pill"><span>Months</span><span>{filtered_b['MONTH_YEAR'].nunique()}</span></div>
 """, unsafe_allow_html=True)
@@ -720,27 +695,34 @@ if uploaded_file is not None:
                 unsafe_allow_html=True
             )
 
-        # ── Guard ──────────────────────────────────────────────────────────────
-        if len(filtered_df) == 0:
-            st.warning("⚠️ No data available for the selected filters.")
+        # ── Guard: only hide when Sheet A filters yield zero COLABs (rule #2) ──
+        if len(valid_colabs) == 0:
+            st.warning("⚠️ No COLABs match the selected Sheet A filters. The dashboard cannot be displayed.")
         else:
             # ── KPI row ────────────────────────────────────────────────────────
             st.markdown('<div class="section-heading">◈  Key Performance Indicators</div>', unsafe_allow_html=True)
 
+            # Stock-side data for all COLABs in the valid set
             filtered_sheet_a = sheet_a_unique[sheet_a_unique['COLAB'].isin(valid_colabs)]
             f_init    = filtered_sheet_a['INITIAL_QTY'].sum()
-            f_sold    = filtered_sheet_a['TOTAL_QTY'].sum()
             f_bal     = filtered_sheet_a['BALANCE'].sum()
             f_damaged = filtered_sheet_a['DAMAGED_QTY'].sum()
-            f_spct    = (f_sold / f_init * 100) if f_init > 0 else 0
+            # Stock-side Total Qty (used for Sales % and distribution tables, not for "Total Qty Sold" KPI)
+            f_stock_sold = filtered_sheet_a['TOTAL_QTY'].sum()
+
+            # Order-side Total Qty Sold (from filtered B data, rule #3)
+            total_qty_sold = int(filtered_b['QTY'].sum())
+
+            # Sales % from stock side
+            f_spct = (f_stock_sold / f_init * 100) if f_init > 0 else 0
 
             col1, col2, col3, col4, col5, col6 = st.columns(6)
             kpis = [
                 (col1, "📦", "Initial Qty",    f"{f_init:,.0f}"),
-                (col2, "💰", "Total Qty Sold", f"{f_sold:,.0f}"),
+                (col2, "💰", "Total Qty Sold", f"{total_qty_sold:,.0f}"),   # ← now order-based
                 (col3, "⚖️", "Balance Qty",   f"{f_bal:,.0f}"),
                 (col4, "🛠️", "Damaged Qty",   f"{f_damaged:,.0f}"),
-                (col5, "🔄", "Return % Jan-Apr 2026",       f"{return_pct:.1f}%"),
+                (col5, "🔄", "Return % Jan-Apr 2026", f"{return_pct:.1f}%"),
                 (col6, "📈", "Sales %",        f"{f_spct:.1f}%"),
             ]
             for col, icon, label, value in kpis:
@@ -754,7 +736,7 @@ if uploaded_file is not None:
 
             st.markdown("<hr>", unsafe_allow_html=True)
 
-            # ── Distribution tables (now using gold-themed HTML tables) ────────
+            # ── Distribution tables (stock‑side, rule #4) ────────────────────
             st.markdown('<div class="section-heading">◈  Sales Distribution Tables</div>', unsafe_allow_html=True)
 
             def analyze_group(group_col, display_name):
@@ -763,7 +745,7 @@ if uploaded_file is not None:
 
                 grouped = filtered_sheet_a.groupby(group_col, observed=True).agg(
                     INITIAL_QTY=('INITIAL_QTY', 'sum'),
-                    TOTAL_QTY=('TOTAL_QTY',     'sum'),
+                    TOTAL_QTY=('TOTAL_QTY',     'sum'),   # stock‑side Total Qty
                     BALANCE=('BALANCE',          'sum'),
                     DAMAGED_QTY=('DAMAGED_QTY',  'sum'),
                 ).reset_index()
@@ -784,7 +766,6 @@ if uploaded_file is not None:
                     sort_map[sort_column], ascending=(sort_order == 'Ascending')
                 )
 
-                # Build display DataFrame with formatted strings
                 display = pd.DataFrame()
                 display[display_name]   = grouped[group_col].astype(str)
                 display['Initial Qty']  = grouped['INITIAL_QTY'].apply(lambda v: f"{int(v):,}")
@@ -822,10 +803,9 @@ if uploaded_file is not None:
 
             st.markdown("<hr>", unsafe_allow_html=True)
 
-            # ── Visual Analytics ───────────────────────────────────────────────
+            # ── Visual Analytics ─────────────────────────────────────────────
             st.markdown('<div class="section-heading">◈  Visual Analytics</div>', unsafe_allow_html=True)
 
-            # Helper for grouped bar charts
             def grouped_bar_chart(data, x_col, title, xaxis_label):
                 if data.empty:
                     st.info(f"No data available for {xaxis_label}")
@@ -862,7 +842,7 @@ if uploaded_file is not None:
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-            # CHART 1 — Marketplace
+            # CHART 1 — Marketplace (order data, rule #5)
             st.markdown('<div class="chart-wrap"><div class="chart-label">🌐  Marketplace Wise Qty Sold</div>', unsafe_allow_html=True)
             website_data = (
                 filtered_b[
@@ -889,11 +869,10 @@ if uploaded_file is not None:
                                                    'categoryarray': website_data['WEBSITE'].tolist()})
                 st.plotly_chart(fig_ws, use_container_width=True)
             else:
-                st.info("No marketplace data available")
+                st.info("No marketplace order data for the selected filters")
             st.markdown("</div>", unsafe_allow_html=True)
 
-          
-            # CHART 6 — Month-Year
+            # CHART 6 — Month-Year (order data, rule #5)
             st.markdown('<div class="chart-wrap"><div class="chart-label">📅  Month-Year Wise Qty Distribution</div>', unsafe_allow_html=True)
             monthly_b = filtered_b[filtered_b['ORDER_DATE'].notna()].copy()
             if not monthly_b.empty:
@@ -930,11 +909,11 @@ if uploaded_file is not None:
                 )
                 st.plotly_chart(fig_mo, use_container_width=True)
             else:
-                st.info("No order date data available")
+                st.info("No marketplace order data for the selected filters")
             st.markdown("</div>", unsafe_allow_html=True)
 
             # Raw data expander
-            with st.expander("🔍 View Raw Data"):
+            with st.expander("🔍 View Raw Data (filtered orders)"):
                 st.dataframe(filtered_b, use_container_width=True)
 
     except Exception as e:
